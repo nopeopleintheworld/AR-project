@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機櫃零件識別</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <header>
+        <h1>機櫃零件識別系統</h1>
+        <nav>
+            <a href="#identify">識別零件</a>
+            <a href="#ar">AR展示</a>
+            <a href="#help">使用說明</a>
+        </nav>
+    </header>
+    <div class="container" id="identify">
+        <h2>識別零件</h2>
+        <input type="file" id="upload" accept="image/*">
+        <button onclick="identifyPart()">識別零件</button>
+        <div class="result" id="result"></div>
+    </div>
+    <div class="container" id="ar">
+        <h2>AR展示</h2>
+        <p>這裡將顯示AR體驗的內容。</p>
+        <button onclick="startAR()">開始AR體驗</button>
+    </div>
+    <div class="container" id="help">
+        <h2>使用說明</h2>
+        <p>常見問題和使用指導。</p>
+    </div>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
