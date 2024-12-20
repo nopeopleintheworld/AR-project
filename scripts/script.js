@@ -15,8 +15,8 @@ async function identifyPart() {
             context.drawImage(img, 0, 0);
 
             // 使用 Teachable Machine 進行預測
-            const modelURL = "./my_model/model.json"; // 替換為您的模型路徑
-            const metadataURL = "./my_model/metadata.json"; // 替換為您的元數據路徑
+            const modelURL = "https://teachablemachine.withgoogle.com/models/rByXY4DbW/model.json"; // 替換為您的模型路徑
+            const metadataURL = "https://teachablemachine.withgoogle.com/models/rByXY4DbW/metadata.json"; // 替換為您的元數據路徑
             const model = await tmImage.load(modelURL, metadataURL);
             const prediction = await model.predict(canvas);
 
