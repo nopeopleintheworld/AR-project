@@ -3,21 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機櫃零件識別</title>
-    <link rel="stylesheet" href="styles\style.css">
+    <title>機櫃零件識別系統</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <style>
+        .container {
+            display: none; /* 預設隱藏所有分頁 */
+        }
+        .active {
+            display: block; /* 顯示當前分頁 */
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>機櫃零件識別系統</h1>
         <nav>
-            <a href="Homepage.html">主页</a>
-            <a href="identify.html">識別零件</a>
-            <a href="AR.html">AR展示</a>
-            <a href="Help.html">使用說明</a>
+            <a href="#" onclick="showPage('homepage')">主頁</a>
+            <a href="#" onclick="showPage('identify')">識別零件</a>
+            <a href="#" onclick="showPage('ar')">AR展示</a>
+            <a href="#" onclick="showPage('help')">使用說明</a>
         </nav>
     </header>
-    <div class="container" id="about us">
+    
+    <div class="container active" id="homepage">
         <h2>關於我們</h2>
-        <p></p>
+        <p>這是一個機櫃零件識別系統，幫助用戶快速識別各種零件。</p>
     </div>
-</body>
+
+    <div class="container" id="identify">
+        <h2>識別零件</h2>
+        <input type="file" id="imageUpload" accept="image/*" >
+        <button onclick="uploadImage()" class="button">上傳並識別</button>
+        <div id="label-container"></div>
+        <div class="result" id="result"></div>
+        <div id="webcam-container"></div>
+        <div class="sidebar">
+            <button type="button" onclick="init()" class="button">啟動攝像頭</button>
+            <button type="button" onclick="stopcam()" class="button">停止攝像頭</button>
+        </div>
+    </div>
+    
+    <div class="container" id="ar">
+        <h2>AR展示</h2>
+        <p>這裡將顯示AR體驗的內容。</p>
+        <button onclick="startAR()" class="button">開始AR體驗</button>
+    </div>
+    
+    <div class="container" id="help">
+        <h2>使用說明</h2>
+        <p>常見問題和使用指導。</p>
+    </div>
+
+    <script src="scripts/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>

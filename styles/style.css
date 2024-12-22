@@ -35,7 +35,16 @@ input[type="file"] {
 }
 .sidebar {
     width: 80%;
-    padding: 10px;
+    padding: 10px ;
     flex-direction: column;
     align-items: center;
+}
+.button {
+    border-radius: 4px; /* 可以添加圓角 */
+    transition: background-color 0.3s, border-color 0.3s; /* 添加過渡效果 */
+}
+
+.button:hover {
+    background-color: #f0f0f0; /* 懸停時的背景色 */
+    border-color: #aaa; /* 懸停時的邊框顏色 */
 }
