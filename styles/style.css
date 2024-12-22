@@ -32,4 +32,10 @@ input[type="file"] {
 }
 .result {
     margin-top: 20px;
-}        
+}
+.sidebar {
+    width: 80%;
+    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+}

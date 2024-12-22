@@ -1,47 +1,42 @@
-async function identifyPart() {
-    const fileInput = document.getElementById('upload');
-    const resultDiv = document.getElementById('result');
+// Teachable Machine 模型 URL
+const URL = "https://teachablemachine.withgoogle.com/models/6aRa8wpAK/";
 
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        
-        img.onload = async () => {
-            // 將上傳的圖片轉換為畫布
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            context.drawImage(img, 0, 0);
+let model, webcam, labelContainer, maxPredictions;
 
-            // 使用 Teachable Machine 進行預測
-            const modelURL = "https://teachablemachine.withgoogle.com/models/rByXY4DbW/model.json";
-            const metadataURL = "https://teachablemachine.withgoogle.com/models/rByXY4DbW/metadata.json";
-            const model = await tmImage.load(modelURL, metadataURL);
-            const prediction = await model.predict(canvas);
+// 初始化模型和攝像頭
+async function init() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
 
-            // 顯示識別結果
-            let resultText = "";
-            prediction.forEach((pred) => {
-                resultText += `${pred.className}: ${pred.probability.toFixed(2)}<br>`;
-            });
-            resultDiv.innerHTML = '識別結果：<br>' + resultText;
-        };
-    } else {
-        resultDiv.innerHTML = '請上傳圖片。';
+    model = await tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    const flip = true; // 是否翻轉攝像頭
+    cam = new tmImagwebe.Webcam(200, 200, flip); // 設定攝像頭大小
+    await webcam.setup(); // 請求攝像頭訪問權限
+    await webcam.play();
+    window.requestAnimationFrame(loop);
+
+    // 將攝像頭畫布添加到 DOM
+    document.getElementById("webcam-container").appendChild(webcam.canvas);
+    labelContainer = document.getElementById("label-container");
+    for (let i = 0; i < maxPredictions; i++) {
+        labelContainer.appendChild(document.createElement("div"));
     }
 }
 
-function startAR() {
-    const arContainer = document.getElementById('ar-container');
-    arContainer.innerHTML = `
-        <a-scene embedded arjs>
-            <a-marker preset="hiro">
-                <a-box position='0 0.5 0' material='color: yellow;'></a-box>
-            </a-marker>
-            <a-entity camera></a-entity>
-        </a-scene>
-    `;
-    alert('AR功能已啟動！');
+async function loop() {
+    webcam.update(); // 更新攝像頭畫面
+    await predict();
+    window.requestAnimationFrame(loop);
+}
+
+// 將攝像頭畫面傳遞到模型進行預測
+async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+    for (let i = 0; i < maxPredictions; i++) {
+        const classPrediction =
+            prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+        labelContainer.childNodes[i].innerHTML = classPrediction;
+    }
 }
