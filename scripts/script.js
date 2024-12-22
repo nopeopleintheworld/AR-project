@@ -1,7 +1,38 @@
-// Teachable Machine 模型的 URL
 const URL = "https://teachablemachine.withgoogle.com/models/1o5pe2PYG/";
-
 let model, webcam, labelContainer, maxPredictions;
+
+// 初始化攝像頭
+async function initCamera() {
+    const videoElement = document.getElementById('video');
+
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        let selectedDeviceId;
+
+        // 遍歷設備，選擇後置攝像頭
+        devices.forEach(device => {
+            if (device.kind === 'videoinput') {
+                if (device.label.toLowerCase().includes('back')) {
+                    selectedDeviceId = device.deviceId;
+                }
+            }
+        });
+
+        // 如果沒有找到後置攝像頭，則選擇第一個可用的攝像頭
+        if (!selectedDeviceId) {
+            const frontCamera = devices.find(device => device.kind === 'videoinput');
+            if (frontCamera) selectedDeviceId = frontCamera.deviceId;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined }
+        });
+
+        videoElement.srcObject = stream;
+    } catch (error) {
+        console.error('獲取攝像頭失敗:', error);
+    }
+}
 
 // 初始化模型和設置攝像頭
 async function init() {
@@ -14,8 +45,7 @@ async function init() {
     maxPredictions = model.getTotalClasses();
 
     // 設置攝像頭
-    const flip = true; // 是否翻轉攝像頭
-    webcam = new tmImage.Webcam(200, 200, flip); // 寬度、高度、翻轉
+    webcam = new tmImage.Webcam(200, 200, false); // 寬度、高度、翻轉
     await webcam.setup(); // 請求訪問攝像頭
     await webcam.play();
     window.requestAnimationFrame(loop);
@@ -26,7 +56,6 @@ async function init() {
     for (let i = 0; i < maxPredictions; i++) {
         labelContainer.appendChild(document.createElement("div")); // 添加類別標籤
     }
-    
 }
 
 async function uploadImage() {
@@ -72,7 +101,7 @@ async function predict() {
 
 // 顯示預測結果的函數
 function displayPrediction(prediction) {
-    const labelContainer = document.getElementById('labelContainer');
+    const labelContainer = document.getElementById('label-container');
     labelContainer.innerHTML = ''; // 清空之前的預測結果
 
     for (let i = 0; i < maxPredictions; i++) {
@@ -91,8 +120,21 @@ function showPage(pageId) {
 }
 
 // 初始化應用
-window.onload = init;
+window.onload = async () => {
+    await initCamera();
+};
 
-async function stopcam() {
+async function stopCamera() {
     webcam.pause();
+}
+
+async function changeCamera() {
+    // 切換攝像頭的邏輯可以在這裡實現
+    stopcam();
+    // 重新初始化攝像頭
+    await init();
+}
+
+async function startCamera() {
+    await init();
 }
