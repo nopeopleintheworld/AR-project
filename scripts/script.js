@@ -1,3 +1,23 @@
+// 全局變量聲明
+let storage;
+const firebaseConfig = {
+    apiKey: "AIzaSyADRjya5_yDXdmODky4cnvj0obvPKcfDOA",
+    authDomain: "flu-andy.firebaseapp.com",
+    projectId: "flu-andy",
+    storageBucket: "flu-andy.appspot.com",
+    messagingSenderId: "1025758966761",
+    appId: "1:1025758966761:web:1fa9524627df5583345178",
+};
+
+// 初始化 Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+    storage = firebase.storage();
+    console.log('Firebase Storage initialized successfully');
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+}
+
 const URL = "https://teachablemachine.withgoogle.com/models/1o5pe2PYG/";
 let model, webcam, labelContainer, maxPredictions;
 
@@ -18,7 +38,7 @@ async function initCamera() {
             }
         });
 
-        // 如果沒有找到後置攝像頭，則選擇第一個可用的攝像頭
+        // 如果沒有找到後置攝像頭，則選第一個可用的攝像頭
         if (!selectedDeviceId) {
             const frontCamera = devices.find(device => device.kind === 'videoinput');
             if (frontCamera) selectedDeviceId = frontCamera.deviceId;
@@ -62,26 +82,73 @@ async function uploadImage() {
     const fileInput = document.getElementById('imageUpload');
     const file = fileInput.files[0];
     if (!file) {
-        alert('請選擇一張圖片！');
+        alert('請選取一張圖片！');
         return;
     }
 
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(file);
-    img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+    try {
+        // Show loading state
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '上傳中...';
+        
+        console.log('開始上傳文件:', file.name); // 新增的日誌
+        
+        // Create a unique filename
+        const timestamp = new Date().getTime();
+        const filename = `image_${timestamp}_${file.name}`;
+        const storageRef = storage.ref('images/' + filename);
+        
+        console.log('準備上傳到路徑:', 'images/' + filename); // 新增的日誌
 
-        // 進行預測
-        const prediction = await model.predict(canvas);
-        displayPrediction(prediction);
-    };
+        // Upload with progress monitoring
+        const uploadTask = storageRef.put(file);
+        
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('上傳進度:', Math.round(progress) + '%'); // 新增的日誌
+                resultDiv.innerHTML = `上傳進度: ${Math.round(progress)}%`;
+            },
+            (error) => {
+                console.error('上傳過程中發生錯誤:', error);
+                throw error;
+            },
+            async () => {
+                console.log('上傳完成！'); // 新增的日誌
+            }
+        );
 
-    document.getElementById('imageContainer').innerHTML = ''; // 清空之前的圖片
-    document.getElementById('imageContainer').appendChild(img);
+        // Wait for upload to complete
+        await uploadTask;
+        const imageUrl = await storageRef.getDownloadURL();
+
+        // Create and display image
+        const img = document.createElement('img');
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.src = URL.createObjectURL(file);
+        
+        img.onload = async () => {
+            try {
+                const prediction = await model.predict(img);
+                displayPrediction(prediction);
+            } catch (error) {
+                console.error('Prediction error:', error);
+                alert('識別過程中發生錯誤: ' + error.message);
+            }
+        };
+
+        resultDiv.innerHTML = '';
+        resultDiv.appendChild(img);
+
+        console.log('Upload successful. URL:', imageUrl);
+        return imageUrl;
+
+    } catch (error) {
+        console.error('上傳錯誤詳情:', error);
+        alert('上傳圖片時發生錯誤: ' + error.message);
+        document.getElementById('result').innerHTML = '上傳失敗';
+    }
 }
 
 async function loop() {
@@ -102,16 +169,23 @@ async function predict() {
 // 顯示預測結果的函數
 function displayPrediction(prediction) {
     const labelContainer = document.getElementById('label-container');
-    labelContainer.innerHTML = ''; // 清空之前的預測結果
+    labelContainer.innerHTML = '<h3>識別結果：</h3>';
 
-    for (let i = 0; i < maxPredictions; i++) {
-        const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-        labelContainer.appendChild(document.createElement('div')).innerHTML = classPrediction; // 顯示預測結果
+    prediction.sort((a, b) => b.probability - a.probability); // Sort by probability
+
+    for (let i = 0; i < prediction.length; i++) {
+        const probability = (prediction[i].probability * 100).toFixed(2);
+        const div = document.createElement('div');
+        div.style.margin = '10px 0';
+        div.style.padding = '5px';
+        div.style.backgroundColor = i === 0 ? '#e8f5e9' : 'transparent';
+        div.innerHTML = `${prediction[i].className}: ${probability}%`;
+        labelContainer.appendChild(div);
     }
 }
 
 // 切換顯示分頁
-function showPage(pageId) {
+function showPage (pageId) {
     const pages = document.querySelectorAll('.container');
     pages.forEach(page => {
         page.classList.remove('active'); // 隱藏所有分頁
