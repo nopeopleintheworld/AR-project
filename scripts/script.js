@@ -21,9 +21,18 @@ try {
 const URL = "https://teachablemachine.withgoogle.com/models/1o5pe2PYG/";
 let model, webcam, labelContainer, maxPredictions;
 
+// 添加一個全局變量來追踪攝像頭狀態
+let isRunning = false;
+
 // 初始化攝像頭
 async function initCamera() {
     const videoElement = document.getElementById('video');
+    
+    // Add check for video element
+    if (!videoElement) {
+        console.error('Video element not found');
+        return;
+    }
 
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -54,9 +63,29 @@ async function initCamera() {
     }
 }
 
+// 初始化型
+async function loadModel() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+    try {
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+        console.log('Model loaded successfully');
+    } catch (error) {
+        console.error('Model loading error:', error);
+    }
+}
+
 // 初始化模型和設置攝像頭
 async function init() {
-    document.getElementById('webcam-container').innerHTML = '';
+    isRunning = true;  // 設置運行標誌
+    
+    // 清理 result 區域
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+        resultDiv.innerHTML = '';
+    }
+
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
 
@@ -65,21 +94,63 @@ async function init() {
     maxPredictions = model.getTotalClasses();
 
     // 設置攝像頭
-    webcam = new tmImage.Webcam(200, 200, false); // 寬度、高度、翻轉
-    await webcam.setup(); // 請求訪問攝像頭
+    const flip = false; // 是否翻轉攝像頭
+    webcam = new tmImage.Webcam(400, 400, flip); // 增加尺寸以更清晰
+    await webcam.setup(); // 請求攝像頭權限
     await webcam.play();
-    window.requestAnimationFrame(loop);
 
-    // 將畫布添加到 DOM
-    document.getElementById("webcam-container").appendChild(webcam.canvas);
-    labelContainer = document.getElementById("label-container");
-    for (let i = 0; i < maxPredictions; i++) {
-        labelContainer.appendChild(document.createElement("div")); // 添加類別標籤
+    // 設置 webcam canvas 的樣式
+    webcam.canvas.style.maxWidth = '100%';
+    webcam.canvas.style.height = 'auto';
+    
+    // 將畫布添加到 result 區域
+    if (resultDiv) {
+        resultDiv.appendChild(webcam.canvas);
+        
+        // 確保 canvas 可見
+        webcam.canvas.style.display = 'block';
+        webcam.canvas.style.margin = 'auto';
     }
+
+    // 清理並設置標籤容器
+    labelContainer = document.getElementById("label-container");
+    if (labelContainer) {
+        labelContainer.innerHTML = ''; // 清理舊的標籤
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    // 開始預測循環
+    window.requestAnimationFrame(loop);
 }
 
 async function uploadImage() {
+    // 先停止攝像頭
+    await stopCamera();
+    // 重置模型
+    await loadModel();
+
+    // 清理標籤容器
+    const labelContainer = document.getElementById('label-container');
+    if (labelContainer) {
+        labelContainer.innerHTML = '';
+    }
+
+    // 確保模型已加載
+    if (!model) {
+        alert('模型尚未加載完成，請稍後再試');
+        return;
+    }
+
     const fileInput = document.getElementById('imageUpload');
+    const resultDiv = document.getElementById('result');
+    
+    if (!fileInput || !resultDiv) {
+        console.error('Required elements not found');
+        return;
+    }
+
     const file = fileInput.files[0];
     if (!file) {
         alert('請選取一張圖片！');
@@ -87,27 +158,23 @@ async function uploadImage() {
     }
 
     try {
-        const resultDiv = document.getElementById('result');
         resultDiv.innerHTML = '處理中...';
 
-        // 直接使用本地文件進行預測，不上傳到 Firebase
         const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
+        img.src = window.URL.createObjectURL(file);
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
 
         img.onload = async () => {
             try {
-                // 顯示圖片
                 resultDiv.innerHTML = '';
                 resultDiv.appendChild(img);
-
-                // 進行預測
                 const prediction = await model.predict(img);
                 displayPrediction(prediction);
             } catch (error) {
                 console.error('預測錯誤:', error);
-                alert('識別過程中發生錯誤');
+                alert('識別過程中發生���誤');
+                resultDiv.innerHTML = '預測失敗';
             }
         };
 
@@ -119,7 +186,9 @@ async function uploadImage() {
 }
 
 async function loop() {
-    webcam.update(); // 更新攝像頭畫面
+    if (!isRunning) return;  // 如果不在運行狀態，停止循環
+    
+    webcam.update();
     await predict();
     window.requestAnimationFrame(loop);
 }
@@ -162,20 +231,57 @@ function showPage (pageId) {
 
 // 初始化應用
 window.onload = async () => {
-    await initCamera();
+    // 只加載模型，不自動啟動攝像頭
+    await loadModel();
 };
 
 async function stopCamera() {
-    webcam.pause();
+    isRunning = false;  // 停止循環
+    
+    if (!webcam) {
+        console.log('Webcam is not initialized');
+        return;
+    }
+    
+    try {
+        webcam.pause();
+        
+        // 停止所有視頻流
+        const videoElement = document.getElementById('video');
+        if (videoElement && videoElement.srcObject) {
+            const tracks = videoElement.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            videoElement.srcObject = null;
+        }
+    } catch (error) {
+        console.error('Error stopping camera:', error);
+    }
 }
 
 async function changeCamera() {
-    // 切換攝像頭的邏輯可以在這裡實現
-    stopcam();
-    // 重新初始化攝像頭
-    await init();
+    try {
+        await stopCamera();     // 先停止當前攝像頭
+        await loadModel();      // 重置模型
+        await init();           // 重新初始化攝像頭
+    } catch (error) {
+        console.error('Error changing camera:', error);
+    }
 }
 
 async function startCamera() {
-    await init();
+    try {
+        // 重置模型
+        await loadModel();
+        
+        // 清理 result 區域
+        const result = document.getElementById('result');
+        if (result) {
+            result.innerHTML = '';
+        }
+        
+        // 初始化攝像頭
+        await init();
+    } catch (error) {
+        console.error('Error starting camera:', error);
+    }
 }

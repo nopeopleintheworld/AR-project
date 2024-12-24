@@ -32,9 +32,10 @@
 
     <div class="container" id="identify">
         <h2>識別零件</h2>
-        <input type="file" id="imageUpload" accept="image/*" >
-        <button onclick="uploadImage()" class="button">上傳並識別</button>
+        <div id="result"></div>
         <div id="label-container"></div>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="uploadImage()" class="button">上傳並識別</button>
         <div class="result" id="result"></div>
         <div id="webcam-container"></div>
         <div class="sidebar">

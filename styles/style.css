@@ -1,88 +1,157 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-     background-color: #f4f4f4;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
 }
+
 header {
-    background-color: #333;
+    background: linear-gradient(135deg, #000000, #000000);
     color: #fff;
-    padding: 10px 20px;
+    padding: 20px;
     text-align: center;
-}       
-nav {
-    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+    font-weight: 500;
+}
+
+nav {
+    margin: 20px 0;
+}
+
 nav a {
     margin: 0 15px;
     color: #fff;
     text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
 }
+
+nav a:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
 .container {
-    width: 80%;
-    margin: auto;
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #1e88e5;
+    background: #f0f4f8;
+}
+
+.result {
+    margin: 30px 0;
     padding: 20px;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-input[type="file"] {
-    margin: 10px 0;
-}
-.result {
-    margin-top: 20px;
-}
+
 .sidebar {
-    width: 80%;
-    padding: 10px ;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
+
 .button {
-    border-radius: 4px; /* 可以添加圓角 */
-    transition: background-color 0.3s, border-color 0.3s; /* 添加過渡效果 */
+    background: #1e88e5;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .button:hover {
-    background-color: #f0f0f0; /* 懸停時的背景色 */
-    border-color: #aaa; /* 懸停時的邊框顏色 */
+    background: #1565c0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 #result {
-    margin: 20px 0;
+    margin: 30px 0;
     text-align: center;
 }
 
 #result img {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 #label-container {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #fff;
+    margin: 30px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#label-container div {
+    padding: 12px;
+    margin: 8px 0;
+    background: #f8f9fa;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.button {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
 }
 
-.button:hover {
-    background-color: #45a049;
+#label-container div:hover {
+    background: #f0f4f8;
+    transform: translateX(5px);
+}
+
+/* 添加響應式設計 */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    nav a {
+        margin: 0 8px;
+        padding: 6px 12px;
+    }
+
+    .button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
 }
