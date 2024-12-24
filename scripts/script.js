@@ -87,67 +87,34 @@ async function uploadImage() {
     }
 
     try {
-        // Show loading state
         const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = '上傳中...';
-        
-        console.log('開始上傳文件:', file.name); // 新增的日誌
-        
-        // Create a unique filename
-        const timestamp = new Date().getTime();
-        const filename = `image_${timestamp}_${file.name}`;
-        const storageRef = storage.ref('images/' + filename);
-        
-        console.log('準備上傳到路徑:', 'images/' + filename); // 新增的日誌
+        resultDiv.innerHTML = '處理中...';
 
-        // Upload with progress monitoring
-        const uploadTask = storageRef.put(file);
-        
-        uploadTask.on('state_changed', 
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('上傳進度:', Math.round(progress) + '%'); // 新增的日誌
-                resultDiv.innerHTML = `上傳進度: ${Math.round(progress)}%`;
-            },
-            (error) => {
-                console.error('上傳過程中發生錯誤:', error);
-                throw error;
-            },
-            async () => {
-                console.log('上傳完成！'); // 新增的日誌
-            }
-        );
-
-        // Wait for upload to complete
-        await uploadTask;
-        const imageUrl = await storageRef.getDownloadURL();
-
-        // Create and display image
+        // 直接使用本地文件進行預測，不上傳到 Firebase
         const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
-        img.src = URL.createObjectURL(file);
-        
+
         img.onload = async () => {
             try {
+                // 顯示圖片
+                resultDiv.innerHTML = '';
+                resultDiv.appendChild(img);
+
+                // 進行預測
                 const prediction = await model.predict(img);
                 displayPrediction(prediction);
             } catch (error) {
-                console.error('Prediction error:', error);
-                alert('識別過程中發生錯誤: ' + error.message);
+                console.error('預測錯誤:', error);
+                alert('識別過程中發生錯誤');
             }
         };
 
-        resultDiv.innerHTML = '';
-        resultDiv.appendChild(img);
-
-        console.log('Upload successful. URL:', imageUrl);
-        return imageUrl;
-
     } catch (error) {
-        console.error('上傳錯誤詳情:', error);
-        alert('上傳圖片時發生錯誤: ' + error.message);
-        document.getElementById('result').innerHTML = '上傳失敗';
+        console.error('處理錯誤:', error);
+        alert('處理圖片時發生錯誤');
+        resultDiv.innerHTML = '處理失敗';
     }
 }
 
