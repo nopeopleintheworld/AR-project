@@ -5,65 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>機櫃零件識別系統</title>
     <link rel="stylesheet" href="styles/style.css">
-    <style>
-        .container {
-            display: none; /* 預設隱藏所有分頁 */
-        }
-        .active {
-            display: block; /* 顯示當前分頁 */
-        }
-    </style>
 </head>
 <body>
     <header>
         <h1>機櫃零件識別系統</h1>
-        <nav>
-            <a href="#" onclick="showPage('homepage')">主頁</a>
-            <a href="#" onclick="showPage('identify')">識別零件</a>
-            <a href="#" onclick="showPage('ar')">AR展示</a>
-            <a href="#" onclick="showPage('help')">使用說明</a>
+        <nav class="nav-menu">
+            <a href="#" onclick="showPage('homepage')" class="nav-item">主頁</a>
+            <a href="#" onclick="showPage('identify')" class="nav-item">識別零件</a>
+            <a href="#" onclick="showPage('ar')" class="nav-item">AR展示</a>
+            <a href="#" onclick="showPage('help')" class="nav-item">使用說明</a>
         </nav>
     </header>
     
-    <div class="container active" id="homepage">
-        <h2>關於我們</h2>
-        <p>這是一個機櫃零件識別系統，幫助用戶快速識別各種零件。</p>
-    </div>
-
-    <div class="container" id="identify">
-        <h2>識別零件</h2>
-        <div id="result"></div>
-        <div id="label-container"></div>
-        <input type="file" id="imageUpload" accept="image/*">
-        <button onclick="uploadImage()" class="button">上傳並識別</button>
-        <div class="result" id="result"></div>
-        <div id="webcam-container"></div>
-        <div class="sidebar">
-            <button type="button" onclick="startCamera()" class="button">啟動攝像頭</button>
-            <button type="button" onclick="stopCamera()" class="button">停止攝像頭</button>
-            <button type="button" onclick="changeCamera()" class="button">切換攝像頭</button>
+    <main>
+        <div class="container active" id="homepage">
+            <div class="card">
+                <h2>關於我們</h2>
+                <p>這是一個機櫃零件識別系統，幫助用戶快速識別各種零件。</p>
+            </div>
         </div>
-    </div>
-    
-    <div class="container" id="ar">
-        <h2>AR展示</h2>
-        <p>這裡將顯示AR體驗的內容。</p>
-        <button onclick="startAR()" class="button">開始AR體驗</button>
-    </div>
-    
-    <div class="container" id="help">
-        <h2>使用說明</h2>
-        <p>常見問題和使用指導。</p>
-    </div>
 
+        <div class="container" id="identify">
+            <div class="card">
+                <h2>識別零件</h2>
+                <div class="upload-section">
+                    <label for="imageUpload" class="file-upload-label">
+                        <span>選擇圖片或拍照</span>
+                        <input type="file" id="imageUpload" accept="image/*" capture="environment">
+                    </label>
+                    <button onclick="uploadImage()" class="button primary">上傳並識別</button>
+                </div>
+                
+                <div id="result" class="result-container"></div>
+                <div id="label-container" class="label-container"></div>
+                
+                <div class="camera-controls">
+                    <button type="button" onclick="startCamera()" class="button">啟動攝像頭</button>
+                    <button type="button" onclick="stopCamera()" class="button">停止攝像頭</button>
+                    <button type="button" onclick="changeCamera()" class="button">切換攝像頭</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container" id="ar">
+            <div class="card">
+                <h2>AR展示</h2>
+                <p>這裡將顯示AR體驗的內容。</p>
+                <button onclick="startAR()" class="button">開始AR體驗</button>
+            </div>
+        </div>
+        
+        <div class="container" id="help">
+            <div class="card">
+                <h2>使用說明</h2>
+                <div class="help-content">
+                    <h3>如何使用識別功能</h3>
+                    <p>1. 點擊"選擇圖片"或使用攝像頭</p>
+                    <p>2. 等待系統識別結果</p>
+                    <p>3. 查看識別結果和相關信息</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <!-- 在 body 結束標籤前 -->
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
-    <!-- 你的應用程式腳本 -->
     <script src="scripts/script.js"></script>
 </body>
+</html>

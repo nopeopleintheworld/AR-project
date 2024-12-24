@@ -78,51 +78,75 @@ async function loadModel() {
 
 // 初始化模型和設置攝像頭
 async function init() {
-    isRunning = true;  // 設置運行標誌
+    isRunning = true;
     
-    // 清理 result 區域
     const resultDiv = document.getElementById('result');
     if (resultDiv) {
         resultDiv.innerHTML = '';
     }
 
-    const modelURL = URL + "model.json";
-    const metadataURL = URL + "metadata.json";
-
     // 加載模型和元數據
-    model = await tmImage.load(modelURL, metadataURL);
+    model = await tmImage.load(URL + "model.json", URL + "metadata.json");
     maxPredictions = model.getTotalClasses();
 
-    // 設置攝像頭
-    const flip = false; // 是否翻轉攝像頭
-    webcam = new tmImage.Webcam(400, 400, flip); // 增加尺寸以更清晰
-    await webcam.setup(); // 請求攝像頭權限
-    await webcam.play();
+    try {
+        // 獲取所有可用的視頻輸入設備
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        let selectedDeviceId;
 
-    // 設置 webcam canvas 的樣式
-    webcam.canvas.style.maxWidth = '100%';
-    webcam.canvas.style.height = 'auto';
-    
-    // 將畫布添加到 result 區域
-    if (resultDiv) {
-        resultDiv.appendChild(webcam.canvas);
-        
-        // 確保 canvas 可見
-        webcam.canvas.style.display = 'block';
-        webcam.canvas.style.margin = 'auto';
-    }
-
-    // 清理並設置標籤容器
-    labelContainer = document.getElementById("label-container");
-    if (labelContainer) {
-        labelContainer.innerHTML = ''; // 清理舊的標籤
-        for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.appendChild(document.createElement("div"));
+        // 尋找後置攝像頭
+        for (const device of devices) {
+            if (device.kind === 'videoinput') {
+                if (device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('後') || 
+                    device.label.toLowerCase().includes('rear')) {
+                    selectedDeviceId = device.deviceId;
+                    break;
+                }
+            }
         }
-    }
 
-    // 開始預測循環
-    window.requestAnimationFrame(loop);
+        // 如果沒有找到後置攝像頭，使用第一個可用的攝像頭
+        if (!selectedDeviceId) {
+            const frontCamera = devices.find(device => device.kind === 'videoinput');
+            if (frontCamera) selectedDeviceId = frontCamera.deviceId;
+        }
+
+        // 設置攝像頭
+        webcam = new tmImage.Webcam(400, 400, false); // 不翻轉
+        await webcam.setup({
+            deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+            facingMode: selectedDeviceId ? undefined : 'environment'
+        });
+        await webcam.play();
+
+        // 設置 webcam canvas 的樣式
+        webcam.canvas.style.maxWidth = '100%';
+        webcam.canvas.style.height = 'auto';
+        
+        // 將畫布添加到 result 區域
+        if (resultDiv) {
+            resultDiv.appendChild(webcam.canvas);
+            webcam.canvas.style.display = 'block';
+            webcam.canvas.style.margin = 'auto';
+        }
+
+        // 設置標籤容器
+        labelContainer = document.getElementById("label-container");
+        if (labelContainer) {
+            labelContainer.innerHTML = '';
+            for (let i = 0; i < maxPredictions; i++) {
+                labelContainer.appendChild(document.createElement("div"));
+            }
+        }
+
+        // 開始預測循環
+        window.requestAnimationFrame(loop);
+
+    } catch (error) {
+        console.error('Camera initialization error:', error);
+        alert('無法啟動攝像頭，請確保已授予權限');
+    }
 }
 
 async function uploadImage() {
@@ -173,7 +197,7 @@ async function uploadImage() {
                 displayPrediction(prediction);
             } catch (error) {
                 console.error('預測錯誤:', error);
-                alert('識別過程中發生���誤');
+                alert('識別過程中發生錯誤');
                 resultDiv.innerHTML = '預測失敗';
             }
         };
